@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vector Tool</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<aside class="panel">
+  <header class="brand">
+    <div class="logo"><svg viewBox="0 0 24 24"><path d="M4 18 L10 5 L14 13 L17 9 L21 18 Z"/><circle cx="10" cy="5" r="1.6"/><circle cx="17" cy="9" r="1.6"/></svg></div>
+    <div><div class="name">Vector Tool</div><div class="sub">位图转干净矢量 · 本地运行</div></div>
+  </header>
+
+  <section>
+    <label class="drop" id="drop">
+      <input type="file" id="file" accept="image/*" hidden>
+      <span class="drop-main">拖入图片，或点击选择</span>
+      <span class="drop-sub">PNG / JPG / WebP，可直接粘贴</span>
+    </label>
+    <div class="samples">示例：<button data-sample="bear.jpg">小熊</button><button data-sample="lego.jpg">Logo</button></div>
+  </section>
+
+  <section>
+    <h3>颜色</h3>
+    <div class="ctl"><label>合并阈值 <i title="两种颜色的人眼色差(ΔE)小于此值就合并。调大＝更少碎片，调小＝保留更多相近色">?</i></label><input type="range" id="merge_de" min="2" max="30" step="0.5"><output></output></div>
+    <div class="ctl"><label>最多颜色数</label><input type="range" id="max_colors" min="2" max="32" step="1"><output></output></div>
+    <div class="palette-head"><span>调色板</span><span id="lockState" class="muted">自动识别</span></div>
+    <div id="palette" class="palette"></div>
+    <div class="hint" id="paletteHint">点色块可改输出颜色，× 删除（并入最近的颜色）。改动后调色板会锁定。</div>
+  </section>
+
+  <section>
+    <h3>清理碎片</h3>
+    <div class="ctl"><label>最小色块面积 <i title="小于这个面积(原图像素²)的色块并入周围">?</i></label><input type="range" id="min_area" min="0" max="600" step="5"><output></output></div>
+    <div class="ctl"><label>过渡细条宽度 <i title="比这更细的条带视为抗锯齿边缘，并入两侧主色">?</i></label><input type="range" id="strip_width" min="0" max="6" step="0.5"><output></output></div>
+    <div class="ctl"><label>降噪强度</label><input type="range" id="denoise" min="0" max="5" step="1"><output></output></div>
+  </section>
+
+  <section>
+    <h3>路径</h3>
+    <div class="ctl"><label>平滑度</label><input type="range" id="smooth" min="0" max="4" step="0.25"><output></output></div>
+    <div class="ctl"><label>曲线容差 <i title="越大锚点越少、越圆滑；越小越贴合原图">?</i></label><input type="range" id="tolerance" min="0.2" max="4" step="0.1"><output></output></div>
+    <div class="ctl"><label>尖角阈值</label><input type="range" id="corner_angle" min="20" max="100" step="5"><output></output></div>
+    <div class="toggles">
+      <label class="tg"><input type="checkbox" id="regularize"><span>直线吸附水平/垂直</span></label>
+      <label class="tg"><input type="checkbox" id="detect_circles"><span>识别正圆/椭圆</span></label>
+      <label class="tg"><input type="checkbox" id="remove_bg"><span>去掉背景</span></label>
+    </div>
+    <button class="ghost small" id="resetParams">恢复默认参数</button>
+  </section>
+</aside>
+
+<main class="work">
+  <div class="toolbar">
+    <div class="seg" id="viewMode">
+      <button data-mode="orig">原图</button>
+      <button data-mode="vec" class="on">矢量</button>
+      <button data-mode="split">对比</button>
+    </div>
+    <label class="tg inline"><input type="checkbox" id="showAnchors"><span>显示锚点</span></label>
+    <div class="spacer"></div>
+    <div class="zoom">
+      <button id="zoomOut" title="缩小">−</button>
+      <span id="zoomLabel">100%</span>
+      <button id="zoomIn" title="放大">+</button>
+      <button id="zoomFit" class="ghost small">适应</button>
+    </div>
+    <button id="download" class="primary" disabled>下载 SVG</button>
+  </div>
+
+  <div class="viewport" id="viewport">
+    <div class="empty" id="empty">
+      <div class="empty-title">把一张 Logo 或插画拖进来</div>
+      <div class="muted">滚轮缩放，拖动平移。打开“显示锚点”检查路径是否干净。</div>
+    </div>
+    <div class="stage" id="stage">
+      <img id="origImg" alt="">
+      <div id="vecLayer" class="vec"></div>
+      <div id="divider" class="divider"><span></span></div>
+    </div>
+    <canvas id="overlay"></canvas>
+    <div class="busy" id="busy"><span class="spin"></span>处理中</div>
+  </div>
+
+  <footer class="stats" id="stats">
+    <span><b id="stColors">–</b> 种颜色</span>
+    <span><b id="stShapes">–</b> 个形状</span>
+    <span><b id="stAnchors">–</b> 个锚点</span>
+    <span class="muted" id="stTime"></span>
+    <span class="spacer"></span>
+    <span class="muted" id="stSize"></span>
+  </footer>
+</main>
+<script src="/static/app.js"></script>
+</body>
+</html>
